@@ -1,64 +1,60 @@
-import math
-import threading 
-import concurrent.futures
+from math import log10, ceil
 
-FILE = "input.txt"
+def apply_maps(maps, seed):
+    pre_map = seed
+    for m in maps:
+        for ds, ss, rl in m:
+            if ss <= pre_map < ss + rl:
+                pre_map = ds + (pre_map - ss)
+                break
+    return pre_map
 
-lowest = math.inf
+def parse(seed_ranges = False):
+    seeds = [int(x) for x in dat[0].split(': ')[1].strip().split(' ')]
 
-def work(start,end,lines):
-    global lowest
+    if seed_ranges:
+        seeds = [(seeds[2 * i], seeds[2 * i + 1]) for i in range(len(seeds) // 2)]
 
-    print("Start ", threading.current_thread().name)
+    maps = []
+    curr_map = []
+    for d in dat[3:]:
+        if d == '':
+            continue
+        if ':' in d:
+            maps += [curr_map]
+            curr_map = []
+        else:
+            curr_map += [tuple(int(x) for x in d.split(' '))]
 
-    for seed in range(start, end,5):
-        mapped = False
+    maps += [curr_map]
 
-        mapped_val = int(seed)
-        for line in lines[2:]:
-            line = line.strip()
-            if line.endswith(':') or line == '':
-                mapped = False
-                continue
-            if mapped:
-                continue
-
-            [source, destination, r] = line.split()
-            source = int(source)
-            destination = int(destination)
-            r = int(r)
-
-            if mapped_val < destination + r and mapped_val >= destination:
-                mapped_val = (source - destination) + mapped_val
-                mapped = True
-
-        if mapped_val < lowest:
-            lowest = mapped_val
-            print(lowest)
-
-    print("Done ", threading.current_thread().name)
+    return seeds, maps
 
 
-with open(FILE, 'r') as file:
-    lines = file.readlines()
-    seeds = lines[0].split(':')[1].strip().split()
-    
-    threads = []
-    pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
-    N_THREADS = 10
+with open('input.txt') as f:
+    dat = [x.strip('\n') for x in f.readlines()]
 
-    for i in range(0, len(seeds), 2):
-        start = int(seeds[i])
-        end = start + int(seeds[i+1]) + 1
-        for i in range(N_THREADS):
-            r = end - start
-            print("start ", start + i * (r // N_THREADS), "end ", start + (i + 1) * (r // N_THREADS))
-            pool.submit(work, start + i * (r // N_THREADS), start + (i + 1) * (r // N_THREADS), lines)
+    seeds, maps = parse(seed_ranges = True)
 
-     
-    pool.shutdown(wait=True)
+    step = int(pow(10, ceil(log10(max(s[1] for s in seeds) / 100))))
+    search_vals = {(ss, ss + sl, s): apply_maps(maps, s) for ss, sl in seeds for s in range(ss, ss + sl, step)}
+    estimates = min(search_vals.items(), key = lambda x: x[1])
 
+    start, end, best_est = estimates[0]
 
-    
-    print(lowest)
+    print(f'Best estimate: {best_est} in seed range {start} to {end}')
+    print(f'Step size: {step}, best estimate: {best_est}')
+
+    while step > 1:
+        l  = max(best_est - step, start)
+        r = min(best_est + step, end)
+
+        step = step // 10
+        search_vals = {s: apply_maps(maps, s) for s in range(l, r, step)}
+        best_est, best = min(search_vals.items(), key = lambda x: x[1])
+
+        print(f'Step size: {step:<8d}, best estimate: {best_est}')
+
+    print("res=",best)
+
 

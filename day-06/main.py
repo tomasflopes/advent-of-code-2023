@@ -1,5 +1,6 @@
 FILE = "input.txt"
 
+# This actually solves both problems
 with open(FILE, 'r') as file:
     lines = file.readlines()
     times = lines[0].split(':')[1].strip().split()

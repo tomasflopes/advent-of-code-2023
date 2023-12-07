@@ -6,14 +6,7 @@ FILE = "input.txt"
 def cmp_card(c1, c2):
     order = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
 
-    order.index(c1)
-    order.index(c2)
-
-    if order.index(c1) - order.index(c2) > 0:
-        return 1
-    elif order.index(c1) - order.index(c2) < 0:
-        return -1
-    return 0
+    return order.index(c1) - order.index(c2) 
 
 
 def get_occurences(hand):
@@ -24,26 +17,20 @@ def sort_hands(c1, c2):
     c1_occ = get_occurences(c1)
     c2_occ = get_occurences(c2)
 
-    if len(c1_occ) > len(c2_occ):
-        return -1
-    if len(c1_occ) < len(c2_occ):
-        return 1
+    if not len(c1_occ) == len(c2_occ):
+        return len(c2_occ) - len(c1_occ)
 
     greatest_c1 = max(c1_occ.values())
     greatest_c2 = max(c2_occ.values())
 
     if len(c1_occ) == 2 or len(c1_occ) == 3:
-        if greatest_c1 > greatest_c2:
-            return 1
-        if greatest_c1 < greatest_c2:
-            return -1
+        if not greatest_c1 == greatest_c2:
+            return greatest_c1 - greatest_c2
 
     # for now on we can assume that both hands are 'tied'
     for i in range(len(c1)):
-        if cmp_card(c1[i], c2[i]) > 0:
-            return -1
-        elif cmp_card(c1[i], c2[i]) < 0:
-            return 1
+        if not cmp_card(c1[i], c2[i]) == 0:
+            return cmp_card(c2[i], c1[i])
 
     return 0
 

@@ -1,10 +1,9 @@
 FILE = "input.txt"
 
-# This actually solves both problems
-with open(FILE, 'r') as file:
+with open(FILE, "r") as file:
     lines = file.readlines()
-    times = lines[0].split(':')[1].strip().split()
-    distances = lines[1].split(':')[1].strip().split()
+    times = lines[0].split(":")[1].strip().split()
+    distances = lines[1].split(":")[1].strip().split()
 
     i = 0
     res = 1
@@ -13,9 +12,7 @@ with open(FILE, 'r') as file:
         distance = int(distances[i])
         win = 0
         for j in range(time):
-            holding = j
-            left = time - holding
-            if holding * left > distance:
+            if j * (time - j) > distance:
                 win += 1
         res *= win
         i += 1
